@@ -1,0 +1,6 @@
+version: 1.0
+shards:
+  matrix:
+    github: Exilor/matrix
+    commit: c15a51feb06cc0b02f69dc8da45e629e29f53449
+
