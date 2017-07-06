@@ -1,16 +1,17 @@
 require "./genetic_matrix/*"
 require "../lib/matrix/src/matrix.cr"
 
+module GeneticMatrix
 	def sigmoid(val : Float64)
 		return 1.0 / (1.0 + (2.71828 ** (-val)))
 	end
 
 	def sigmoid(val : Matrix(Float64))
-		out = Matrix.new(val.rows.size, val.columns.size) {0.0}
+		out_matrix = Matrix.new(val.rows.size, val.columns.size) {0.0}
 		(val.rows.size * val.columns.size).times do |x|
-			out[x] = sigmoid(val[x])
+			out_matrix[x] = sigmoid(val[x])
 		end
-		out
+		out_matrix
 	end
 
 class GeneticAlgorithm
@@ -50,24 +51,66 @@ class GeneticAlgorithm
 		out
 	end
 
-	def run(fitness : Proc(Array(Matrix), Float64), sizes : Array(Array(Int32)), p_c : Float64, p_m : Float64, epsilon : Int32, members = 100, iterations = 1000)
-
-		population = [] of Array(Matrix)
-		members.times do
-			sizes.size.each do |dimensions|
-				population.push(dimensions[0], dimensions[1], epsilon)
+	def run(fitness : Proc(Array(Matrix(Float64)), Int32), sizes : Array(Array(Int32)), p_c : Float64, p_m : Float64, epsilon : Int32, members = 100, iterations = 1000)
+		#population: initial population for a generation
+		#generation: next generation
+		population = [] of Array(Matrix(Float64))
+		generation = [] of Array(Matrix(Float64))
+		members.times do |member|
+			unit = [] of Matrix(Float64)
+			sizes.each do |dimensions|
+				unit.push(generate(dimensions[0], dimensions[1], epsilon))
 			end
+			population.push(unit)
 		end
+		
+		iterations.times do
+			scores = [] of Int32
+			members.times { |x| scores.push(fitness.call(population[x])) }
+	
+			members.times do
+				collector = rand * (scores.sum)
+				position = -1
+				while collector > 0
+					position += 1
+					collector -= scores[position]
+				end
+				unit = [] of Matrix(Float64)
+				if position == -1
+					sizes.each do |dimensions|
+						unit.push(generate(dimensions[0], dimensions[1], epsilon))
+					end
+				else
+					unit = population[position].map { |z| mutate(z, p_m, epsilon) }
+				end
+				generation.push(unit)
+			end
+	
+			(members - 1).times do |member|
+				generation[member].size.times do |matrix|
+					if (rand < p_c)
+						generation[member][matrix], generation[member + 1][matrix] = crossover(generation[member][matrix], generation[member + 1][matrix])
+					end
+				end
+			end
+			population = generation
+			generation = [] of Array(Matrix(Float64))
+puts scores.max
+		end
+###
+#### v This is where you're at v
+####
+scores = [] of Int32
+members.times { |x| scores.push(fitness.call(population[x])) }
+puts "----"
+puts scores.max
+puts scores.index(scores.max)
+population[scores.index(scores.max).as(Int32)].each { |w| puts w }
+
+#winner = population[scores.index(scores.max)]
+#File.write("results.txt", winner.map { |w| w.to_a }.to_yaml)
 
 	end
-
-
 end
 
-module GeneticMatrix
-	x = GeneticAlgorithm.new.generate(3, 2, 10)
-	puts x
-	#puts sigmoid(x)
 end
-
-
