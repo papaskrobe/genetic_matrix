@@ -40,18 +40,18 @@ class GeneticAlgorithm
 	end
 	
 	def mutate(matrix : Matrix, p : Float64 , epsilon)
-		out = Matrix.new(matrix.rows.size, matrix.columns.size) { 0.0 }
+		outp = Matrix.new(matrix.rows.size, matrix.columns.size) { 0.0 }
 		(matrix.rows.size * matrix.columns.size).times do |x|
 			if rand < p
-				out[x] = (rand * 2 * epsilon) - epsilon
+				outp[x] = (rand * 2 * epsilon) - epsilon
 			else
-				out[x] = matrix[x]
+				outp[x] = matrix[x]
 			end
 		end
-		out
+		outp
 	end
 
-	def run(fitness : Proc(Array(Matrix(Float64)), Int32), sizes : Array(Array(Int32)), p_c : Float64, p_m : Float64, epsilon : Int32, members = 100, iterations = 1000)
+	def run(fitness : Proc(Array(Matrix(Float64)), Int32), sizes : Array(Array(Int32)), p_c : Float64, p_m : Float64, epsilon : Int32, members = 100, iterations = 1000, p_birth = 0.0)
 		#population: initial population for a generation
 		#generation: next generation
 		population = [] of Array(Matrix(Float64))
@@ -69,9 +69,11 @@ class GeneticAlgorithm
 			members.times { |x| scores.push(fitness.call(population[x])) }
 	
 			members.times do
-				collector = rand * (scores.sum)
 				position = -1
-				while collector > 0
+				if (scores.sum > 0 && rand > p_birth)
+					collector = rand * (scores.sum)
+				end
+				while collector && collector > 0
 					position += 1
 					collector -= scores[position]
 				end
@@ -95,11 +97,11 @@ class GeneticAlgorithm
 			end
 			population = generation
 			generation = [] of Array(Matrix(Float64))
-puts scores.max
+print scores.max
+print " - "
+puts (scores.sum / scores.size)
 		end
-###
-#### v This is where you're at v
-####
+
 scores = [] of Int32
 members.times { |x| scores.push(fitness.call(population[x])) }
 puts "----"
