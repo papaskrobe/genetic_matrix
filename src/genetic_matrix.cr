@@ -51,7 +51,8 @@ class GeneticAlgorithm
 		outp
 	end
 
-	def run(fitness : Proc(Array(Matrix(Float64)), Int32), sizes : Array(Array(Int32)), p_c : Float64, p_m : Float64, epsilon : Int32, members = 100, iterations = 1000, p_birth = 0.0)
+	def run(fitness : Proc(Array(Matrix(Float64)), Int32), sizes : Array(Array(Int32)), p_c : Float64, p_m : Float64, 
+			epsilon : Int32, members = 100, iterations = 1000, p_birth = 0.0)
 		#population: initial population for a generation
 		#generation: next generation
 		population = [] of Array(Matrix(Float64))
