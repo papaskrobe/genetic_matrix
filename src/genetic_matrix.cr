@@ -97,21 +97,9 @@ class GeneticAlgorithm
 			end
 			population = generation
 			generation = [] of Array(Matrix(Float64))
-print scores.max
-print " - "
-puts (scores.sum / scores.size)
 		end
 
-scores = [] of Int32
-members.times { |x| scores.push(fitness.call(population[x])) }
-puts "----"
-puts scores.max
-puts scores.index(scores.max)
-population[scores.index(scores.max).as(Int32)].each { |w| puts w }
-
-#winner = population[scores.index(scores.max)]
-#File.write("results.txt", winner.map { |w| w.to_a }.to_yaml)
-
+		return population[scores.index(scores.max)]
 	end
 end
 
